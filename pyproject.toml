@@ -1,0 +1,63 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "citeguard-mcp"
+version = "0.1.0"
+description = "Zero-config MCP Server & CLI to detect LLM hallucinated citations, verify DOIs/PMIDs/arXiv IDs, flag retracted papers, and fetch verified BibTeX from Crossref, DataCite, PubMed, OpenAlex & arXiv."
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.10"
+authors = [
+  { name = "Luca Celebrano", email = "luca.celebrano1@gmail.com" }
+]
+keywords = [
+  "mcp",
+  "model-context-protocol",
+  "citation-verification",
+  "hallucination-detection",
+  "doi",
+  "pubmed",
+  "arxiv",
+  "crossref",
+  "openalex",
+  "bibtex",
+  "llm-guardrails",
+  "claude-code",
+  "cursor",
+  "scientific-writing"
+]
+classifiers = [
+  "Development Status :: 5 - Production/Stable",
+  "Environment :: Console",
+  "Intended Audience :: Developers",
+  "Intended Audience :: Science/Research",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Scientific/Engineering",
+  "Topic :: Software Development :: Quality Assurance",
+  "Topic :: Text Processing :: Markup :: LaTeX"
+]
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["pytest>=7.4.0"]
+
+[project.scripts]
+citeguard-mcp = "citeguard_mcp.cli:main"
+citeguard = "citeguard_mcp.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/Lukecele/citeguard-mcp"
+Repository = "https://github.com/Lukecele/citeguard-mcp"
+Issues = "https://github.com/Lukecele/citeguard-mcp/issues"
+Author = "https://lucacelebrano.me"
+
+[tool.setuptools.packages.find]
+where = ["src"]
