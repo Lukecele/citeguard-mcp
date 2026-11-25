@@ -6,6 +6,7 @@
 *Zero-config Model Context Protocol (MCP) Server & CLI for Claude Code, Cursor, Windsurf, VS Code Copilot, and CI/CD pipelines.*
 
 [![CI](https://github.com/Lukecele/citeguard-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/Lukecele/citeguard-mcp/actions/workflows/ci.yml)
+[![Glama MCP Server](https://glama.ai/mcp/servers/Lukecele/citeguard-mcp/badges/score.svg)](https://glama.ai/mcp/servers/Lukecele/citeguard-mcp)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![MCP Compatible](https://img.shields.io/badge/MCP-JSON--RPC_2.0-00a67e)](https://modelcontextprotocol.io/)
 [![Zero Dependencies](https://img.shields.io/badge/dependencies-zero-22c55e)](./pyproject.toml)
