@@ -138,3 +138,5 @@ pytest -v
 
 Created by **[Luca Celebrano](https://lucacelebrano.me)** ([@Lukecele](https://github.com/Lukecele) · ORCID [`0009-0007-0931-3555`](https://orcid.org/0009-0007-0931-3555)).  
 Released under the [MIT License](./LICENSE).
+
+<!-- mcp-name: io.github.Lukecele/citeguard-mcp -->
