@@ -59,6 +59,18 @@ claude mcp add citeguard -- uvx --from git+https://github.com/Lukecele/citeguard
 }
 ```
 
+#### Docker / GHCR (`ghcr.io/lukecele/citeguard-mcp` · Official MCP Registry `io.github.Lukecele/citeguard-mcp`)
+```json
+{
+  "mcpServers": {
+    "citeguard": {
+      "command": "docker",
+      "args": ["run", "-i", "--rm", "ghcr.io/lukecele/citeguard-mcp:0.1.1"]
+    }
+  }
+}
+```
+
 ### 2. Run Directly from the Terminal (CLI)
 
 ```bash

@@ -1,6 +1,6 @@
 """CiteGuard MCP — Anti-Hallucination Citation Verification & Literature MCP Server."""
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 
 from .verifier import (
     verify_citation,

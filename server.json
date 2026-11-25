@@ -1,0 +1,21 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.Lukecele/citeguard-mcp",
+  "title": "CiteGuard MCP",
+  "description": "Verify DOIs, PMIDs & arXiv IDs, catch LLM chimera & retracted citations, generate BibTeX.",
+  "repository": {
+    "url": "https://github.com/Lukecele/citeguard-mcp",
+    "source": "github"
+  },
+  "websiteUrl": "https://github.com/Lukecele/citeguard-mcp",
+  "version": "0.1.1",
+  "packages": [
+    {
+      "registryType": "oci",
+      "identifier": "ghcr.io/lukecele/citeguard-mcp:0.1.1",
+      "transport": {
+        "type": "stdio"
+      }
+    }
+  ]
+}
