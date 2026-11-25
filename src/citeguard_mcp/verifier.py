@@ -13,7 +13,7 @@ import urllib.request
 import xml.etree.ElementTree as ET
 from typing import Any
 
-USER_AGENT = "CiteGuard-MCP/0.1.1 (https://github.com/Lukecele/citeguard-mcp; mailto:luca.celebrano1@gmail.com)"
+USER_AGENT = "CiteGuard-MCP/0.1.2 (https://github.com/Lukecele/citeguard-mcp; mailto:luca.celebrano1@gmail.com)"
 DEFAULT_TIMEOUT = 10
 
 DOI_REGEX = re.compile(r"\b(10\.\d{4,9}/[-._;()/:A-Za-z0-9]+)\b")

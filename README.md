@@ -6,6 +6,7 @@
 *Zero-config Model Context Protocol (MCP) Server & CLI for Claude Code, Cursor, Windsurf, VS Code Copilot, and CI/CD pipelines.*
 
 [![CI](https://github.com/Lukecele/citeguard-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/Lukecele/citeguard-mcp/actions/workflows/ci.yml)
+[![PyPI](https://img.shields.io/pypi/v/citeguard-mcp?logo=pypi&logoColor=white)](https://pypi.org/project/citeguard-mcp/)
 [![Glama MCP Server](https://glama.ai/mcp/servers/Lukecele/citeguard-mcp/badges/score.svg)](https://glama.ai/mcp/servers/Lukecele/citeguard-mcp)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![MCP Compatible](https://img.shields.io/badge/MCP-JSON--RPC_2.0-00a67e)](https://modelcontextprotocol.io/)
@@ -39,7 +40,7 @@ Even frontier LLMs frequently fail at scientific and technical citations in **th
 
 #### Claude Code (CLI)
 ```bash
-claude mcp add citeguard -- uvx --from git+https://github.com/Lukecele/citeguard-mcp citeguard-mcp serve
+claude mcp add citeguard -- uvx citeguard-mcp serve
 ```
 
 #### Cursor / Claude Desktop / Windsurf (`mcp.json` or `claude_desktop_config.json`)
@@ -48,12 +49,7 @@ claude mcp add citeguard -- uvx --from git+https://github.com/Lukecele/citeguard
   "mcpServers": {
     "citeguard": {
       "command": "uvx",
-      "args": [
-        "--from",
-        "git+https://github.com/Lukecele/citeguard-mcp",
-        "citeguard-mcp",
-        "serve"
-      ]
+      "args": ["citeguard-mcp", "serve"]
     }
   }
 }
@@ -65,7 +61,7 @@ claude mcp add citeguard -- uvx --from git+https://github.com/Lukecele/citeguard
   "mcpServers": {
     "citeguard": {
       "command": "docker",
-      "args": ["run", "-i", "--rm", "ghcr.io/lukecele/citeguard-mcp:0.1.1"]
+      "args": ["run", "-i", "--rm", "ghcr.io/lukecele/citeguard-mcp:0.1.2"]
     }
   }
 }
@@ -74,8 +70,8 @@ claude mcp add citeguard -- uvx --from git+https://github.com/Lukecele/citeguard
 ### 2. Run Directly from the Terminal (CLI)
 
 ```bash
-# Install via pipx / uv / pip
-pip install git+https://github.com/Lukecele/citeguard-mcp
+# Install via pip / pipx / uv (or run zero-install with: uvx citeguard-mcp --help)
+pip install citeguard-mcp
 
 # 1. Audit an entire Markdown manuscript, LaTeX file, or BibTeX bibliography
 citeguard audit manuscript.md --strict
@@ -117,7 +113,7 @@ Prevent hallucinated or broken DOIs/BibTeX entries from ever being merged into y
 ```yaml
 - name: Audit citations with CiteGuard
   run: |
-    pip install git+https://github.com/Lukecele/citeguard-mcp
+    pip install citeguard-mcp
     citeguard audit paper.md --strict
 ```
 

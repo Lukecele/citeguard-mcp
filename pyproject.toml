@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "citeguard-mcp"
-version = "0.1.1"
+version = "0.1.2"
 description = "Zero-config MCP Server & CLI to detect LLM hallucinated citations, verify DOIs/PMIDs/arXiv IDs, flag retracted papers, and fetch verified BibTeX from Crossref, DataCite, PubMed, OpenAlex & arXiv."
 readme = "README.md"
 license = { text = "MIT" }
@@ -55,6 +55,7 @@ citeguard = "citeguard_mcp.cli:main"
 
 [project.urls]
 Homepage = "https://github.com/Lukecele/citeguard-mcp"
+PyPI = "https://pypi.org/project/citeguard-mcp/"
 Repository = "https://github.com/Lukecele/citeguard-mcp"
 Issues = "https://github.com/Lukecele/citeguard-mcp/issues"
 Author = "https://lucacelebrano.me"
