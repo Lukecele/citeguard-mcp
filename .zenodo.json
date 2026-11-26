@@ -1,0 +1,42 @@
+{
+  "title": "CiteGuard MCP: Zero-Dependency Model Context Protocol Server and CLI for Scientific Citation Verification, Chimera Hallucination Detection, and Retraction Screening",
+  "description": "<p>Zero-dependency Python Model Context Protocol (MCP) server and command-line interface (CLI) that verifies scientific citations (DOIs, PubMed PMIDs, and arXiv IDs) in real time across Crossref, DataCite (CERN Zenodo), PubMed (NCBI E-utilities), OpenAlex, and arXiv. Detects fabricated identifiers, LLM chimera metadata mismatches (valid DOIs paired with fabricated titles, authors, or years), and formally retracted papers, and generates canonical BibTeX bibliographies.</p>",
+  "upload_type": "software",
+  "license": "MIT",
+  "version": "0.1.2",
+  "publication_date": "2026-11-26",
+  "creators": [
+    {
+      "name": "Celebrano, Luca",
+      "affiliation": "Independent Researcher, Naples, Italy",
+      "orcid": "0009-0007-0931-3555"
+    }
+  ],
+  "keywords": [
+    "Model Context Protocol",
+    "MCP Server",
+    "Citation Verification",
+    "LLM Hallucination Detection",
+    "Retraction Screening",
+    "BibTeX",
+    "Crossref",
+    "PubMed",
+    "OpenAlex",
+    "arXiv",
+    "Scientific Writing"
+  ],
+  "related_identifiers": [
+    {
+      "scheme": "url",
+      "identifier": "https://github.com/Lukecele/citeguard-mcp",
+      "relation": "isSupplementTo",
+      "resource_type": "software"
+    },
+    {
+      "scheme": "url",
+      "identifier": "https://pypi.org/project/citeguard-mcp/",
+      "relation": "isIdenticalTo",
+      "resource_type": "software"
+    }
+  ]
+}
