@@ -10,6 +10,7 @@
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.24553130.svg)](https://doi.org/10.5281/zenodo.24553130)
 [![bio.tools](https://img.shields.io/badge/bio.tools-citeguard--mcp-0284c7.svg)](https://bio.tools/citeguard-mcp)
 [![Glama MCP Server](https://glama.ai/mcp/servers/Lukecele/citeguard-mcp/badges/score.svg)](https://glama.ai/mcp/servers/Lukecele/citeguard-mcp)
+[![Listed in Awesome MCP Servers](https://sagargupta.online/awesome-mcp-servers/badge.svg)](https://github.com/Sagargupta16/awesome-mcp-servers)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![MCP Compatible](https://img.shields.io/badge/MCP-JSON--RPC_2.0-00a67e)](https://modelcontextprotocol.io/)
 [![Zero Dependencies](https://img.shields.io/badge/dependencies-zero-22c55e)](./pyproject.toml)
