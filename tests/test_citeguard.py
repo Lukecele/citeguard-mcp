@@ -84,12 +84,40 @@ def test_verify_citation_chimera_detection(mock_cr, mock_oa):
     assert len(res["issues"]) == 3
 
 
+@patch("citeguard_mcp.verifier._lookup_openalex_doi", return_value=None)
 @patch("citeguard_mcp.verifier._lookup_datacite_doi", return_value=None)
 @patch("citeguard_mcp.verifier._lookup_crossref_doi", return_value=None)
-def test_verify_citation_fabricated_doi(mock_cr, mock_dc):
+def test_verify_citation_fabricated_doi(mock_cr, mock_dc, mock_oa):
     res = verify_citation("10.9999/hallucinated.fake.doi.2026")
     assert res["verified"] is False
     assert res["verdict"] == "FABRICATED_OR_UNRESOLVED"
+
+
+@patch("citeguard_mcp.verifier._lookup_openalex_doi", return_value={**MOCK_ALPHAFOLD_RECORD, "registry": "OpenAlex"})
+@patch("citeguard_mcp.verifier._lookup_datacite_doi", return_value=None)
+@patch("citeguard_mcp.verifier._lookup_crossref_doi", return_value=None)
+def test_verify_citation_openalex_fallback_when_crossref_down(mock_cr, mock_dc, mock_oa):
+    res = verify_citation("10.1038/s41586-021-03819-2")
+    assert res["verified"] is True
+    assert res["verdict"] == "VERIFIED"
+    assert res["registry"] == "OpenAlex"
+
+
+def test_verify_citation_registry_unavailable_on_network_failure():
+    import urllib.error
+
+    def _raise_503(*args, **kwargs):
+        raise urllib.error.HTTPError("https://api.crossref.org", 503, "Service Unavailable", {}, None)
+
+    with patch("urllib.request.urlopen", side_effect=_raise_503):
+        res = verify_citation("10.1038/s41586-021-03819-2")
+        assert res["verified"] is False
+        assert res["verdict"] == "REGISTRY_UNAVAILABLE"
+        assert res.get("network_error") is True
+
+        report = audit_text("See DOI: 10.1038/s41586-021-03819-2")
+        assert report["unavailable_count"] == 1
+        assert report["fabricated_count"] == 0
 
 
 @patch("citeguard_mcp.verifier._lookup_crossref_doi", return_value=MOCK_RETRACTED_RECORD)

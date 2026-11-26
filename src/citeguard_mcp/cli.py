@@ -44,6 +44,8 @@ def _badge(verdict: str) -> str:
         return f"{YELLOW}{BOLD}⚠ CHIMERA MISMATCH{RESET}"
     if verdict == "RETRACTED":
         return f"{MAGENTA}{BOLD}🚨 RETRACTED{RESET}"
+    if verdict == "REGISTRY_UNAVAILABLE":
+        return f"{YELLOW}{BOLD}⏳ REGISTRY UNAVAILABLE (5xx/429/Timeout){RESET}"
     return f"{RED}{BOLD}✘ FABRICATED / 404{RESET}"
 
 
@@ -129,6 +131,11 @@ def main(argv: list[str] | None = None) -> int:
     p_aud.add_argument("file", nargs="?", help="Path to .md, .tex, .bib, or .txt file (or '-' for stdin).")
     p_aud.add_argument("--text", help="Direct text string to audit.")
     p_aud.add_argument("--strict", action="store_true", help="Exit with code 1 if any unverified citation is found.")
+    p_aud.add_argument(
+        "--fail-on-network-error",
+        action="store_true",
+        help="With --strict, also exit 1 if upstream registries were unreachable (REGISTRY_UNAVAILABLE).",
+    )
     p_aud.add_argument("--json", action="store_true", help="Output raw JSON.")
 
     # 4. search
@@ -183,7 +190,10 @@ def main(argv: list[str] | None = None) -> int:
         else:
             _print_audit_report(report)
         if args.strict and (
-            report["chimera_count"] > 0 or report["fabricated_count"] > 0 or report["retracted_count"] > 0
+            report["chimera_count"] > 0
+            or report["fabricated_count"] > 0
+            or report["retracted_count"] > 0
+            or (args.fail_on_network_error and report.get("unavailable_count", 0) > 0)
         ):
             return 1
         return 0

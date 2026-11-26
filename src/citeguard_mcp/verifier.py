@@ -6,6 +6,8 @@ import concurrent.futures
 import html
 import json
 import re
+import threading
+import time
 import unicodedata
 import urllib.error
 import urllib.parse
@@ -13,8 +15,10 @@ import urllib.request
 import xml.etree.ElementTree as ET
 from typing import Any
 
-USER_AGENT = "CiteGuard-MCP/0.1.3 (https://github.com/Lukecele/citeguard-mcp; mailto:luca.celebrano1@gmail.com)"
+USER_AGENT = "CiteGuard-MCP/0.1.4 (https://github.com/Lukecele/citeguard-mcp; mailto:luca.celebrano1@gmail.com)"
 DEFAULT_TIMEOUT = 10
+RETRYABLE_HTTP_CODES = {408, 429, 500, 502, 503, 504}
+_TLS = threading.local()
 
 DOI_REGEX = re.compile(r"\b(10\.\d{4,9}/[-._;()/:A-Za-z0-9]+)\b")
 PMID_REGEX = re.compile(r"\bPMID:\s*(\d{4,9})\b", re.IGNORECASE)
@@ -22,7 +26,21 @@ ARXIV_REGEX = re.compile(r"\barXiv:\s*(\d{4}\.\d{4,5}(?:v\d+)?)\b", re.IGNORECAS
 BIBTEX_ENTRY_REGEX = re.compile(r"@(\w+)\s*\{\s*([^,]+),([\s\S]*?)\n\}", re.MULTILINE)
 
 
-def _http_get_json(url: str, timeout: int = DEFAULT_TIMEOUT) -> dict[str, Any] | None:
+def _reset_net_errors() -> None:
+    _TLS.net_errors = []
+
+
+def _record_net_error(msg: str) -> None:
+    if not hasattr(_TLS, "net_errors"):
+        _TLS.net_errors = []
+    _TLS.net_errors.append(msg)
+
+
+def _get_net_errors() -> list[str]:
+    return list(getattr(_TLS, "net_errors", []))
+
+
+def _http_get_json(url: str, timeout: int = DEFAULT_TIMEOUT, retries: int = 2) -> dict[str, Any] | None:
     req = urllib.request.Request(
         url,
         headers={
@@ -30,23 +48,51 @@ def _http_get_json(url: str, timeout: int = DEFAULT_TIMEOUT) -> dict[str, Any] |
             "Accept": "application/json",
         },
     )
-    try:
-        with urllib.request.urlopen(req, timeout=timeout) as resp:
-            if resp.status == 200:
-                return json.loads(resp.read().decode("utf-8", errors="replace"))
-    except Exception:
-        return None
+    for attempt in range(retries + 1):
+        try:
+            with urllib.request.urlopen(req, timeout=timeout) as resp:
+                if resp.status == 200:
+                    return json.loads(resp.read().decode("utf-8", errors="replace"))
+        except urllib.error.HTTPError as e:
+            if e.code in RETRYABLE_HTTP_CODES:
+                if attempt < retries:
+                    time.sleep(0.35 * (attempt + 1))
+                    continue
+                _record_net_error(f"HTTP {e.code} from {url}")
+            return None
+        except (urllib.error.URLError, TimeoutError, OSError) as e:
+            if attempt < retries:
+                time.sleep(0.35 * (attempt + 1))
+                continue
+            _record_net_error(f"Network/timeout error from {url}: {e}")
+            return None
+        except Exception:
+            return None
     return None
 
 
-def _http_get_text(url: str, timeout: int = DEFAULT_TIMEOUT) -> str | None:
+def _http_get_text(url: str, timeout: int = DEFAULT_TIMEOUT, retries: int = 2) -> str | None:
     req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
-    try:
-        with urllib.request.urlopen(req, timeout=timeout) as resp:
-            if resp.status == 200:
-                return resp.read().decode("utf-8", errors="replace")
-    except Exception:
-        return None
+    for attempt in range(retries + 1):
+        try:
+            with urllib.request.urlopen(req, timeout=timeout) as resp:
+                if resp.status == 200:
+                    return resp.read().decode("utf-8", errors="replace")
+        except urllib.error.HTTPError as e:
+            if e.code in RETRYABLE_HTTP_CODES:
+                if attempt < retries:
+                    time.sleep(0.35 * (attempt + 1))
+                    continue
+                _record_net_error(f"HTTP {e.code} from {url}")
+            return None
+        except (urllib.error.URLError, TimeoutError, OSError) as e:
+            if attempt < retries:
+                time.sleep(0.35 * (attempt + 1))
+                continue
+            _record_net_error(f"Network/timeout error from {url}: {e}")
+            return None
+        except Exception:
+            return None
     return None
 
 
@@ -209,6 +255,33 @@ def _lookup_datacite_doi(doi: str) -> dict[str, Any] | None:
     }
 
 
+def _lookup_openalex_doi(doi: str) -> dict[str, Any] | None:
+    encoded = urllib.parse.quote(doi, safe="")
+    w = _http_get_json(f"https://api.openalex.org/works/https://doi.org/{encoded}")
+    if not w or not w.get("title"):
+        return None
+    authors = [
+        a.get("author", {}).get("display_name")
+        for a in w.get("authorships", [])
+        if a.get("author", {}).get("display_name")
+    ]
+    loc = w.get("primary_location") or {}
+    src = loc.get("source") or {}
+    is_retracted = bool(w.get("is_retracted"))
+    return {
+        "registry": "OpenAlex",
+        "doi": doi,
+        "title": w.get("title", "").strip(),
+        "authors": authors,
+        "year": w.get("publication_year"),
+        "journal": src.get("display_name") or "OpenAlex",
+        "url": f"https://doi.org/{doi}",
+        "citation_count": w.get("cited_by_count", 0),
+        "is_retracted": is_retracted,
+        "retraction_notices": ["OpenAlex is_retracted=True"] if is_retracted else [],
+    }
+
+
 def _lookup_pubmed_pmid(pmid: str) -> dict[str, Any] | None:
     clean_id = re.sub(r"\D", "", pmid)
     if not clean_id:
@@ -333,6 +406,7 @@ def verify_citation(
     and detect fabricated identifiers, chimera metadata hallucinations, and retracted papers.
     """
     raw = identifier_or_query.strip()
+    _reset_net_errors()
     record: dict[str, Any] | None = None
     id_type = "query"
 
@@ -343,7 +417,7 @@ def verify_citation(
     if doi_m:
         id_type = "doi"
         clean = _clean_doi(doi_m.group(1))
-        record = _lookup_crossref_doi(clean) or _lookup_datacite_doi(clean)
+        record = _lookup_crossref_doi(clean) or _lookup_datacite_doi(clean) or _lookup_openalex_doi(clean)
         if record and record.get("registry") == "Crossref" and not record.get("is_retracted"):
             oa = _http_get_json(f"https://api.openalex.org/works/https://doi.org/{urllib.parse.quote(clean, safe='')}")
             if oa and oa.get("is_retracted"):
@@ -366,12 +440,26 @@ def verify_citation(
                 record = candidate
 
     if not record:
+        net_errors = _get_net_errors()
+        if net_errors:
+            return {
+                "verified": False,
+                "verdict": "REGISTRY_UNAVAILABLE",
+                "network_error": True,
+                "identifier_type": id_type,
+                "query": raw,
+                "issues": [
+                    f"Transient network or rate-limit error while reaching upstream registries for '{raw}': {net_errors[0]}"
+                ],
+                "recommendation": "Upstream registry was temporarily unreachable (5xx/429/timeout); retry when network connectivity recovers.",
+            }
         return {
             "verified": False,
             "verdict": "FABRICATED_OR_UNRESOLVED",
+            "network_error": False,
             "identifier_type": id_type,
             "query": raw,
-            "issues": [f"Identifier or citation '{raw}' does not resolve in Crossref, DataCite, PubMed, or arXiv."],
+            "issues": [f"Identifier or citation '{raw}' does not resolve in Crossref, DataCite, OpenAlex, PubMed, or arXiv."],
             "recommendation": "Remove or replace this citation; it appears to be hallucinated or contains a broken identifier.",
         }
 
@@ -510,6 +598,7 @@ def audit_text(text: str, max_workers: int = 6) -> dict[str, Any]:
             "chimera_count": 0,
             "fabricated_count": 0,
             "retracted_count": 0,
+            "unavailable_count": 0,
             "integrity_score": 100.0,
             "results": [],
             "summary": "No DOIs, PMIDs, arXiv IDs, or BibTeX entries found in the provided text.",
@@ -532,6 +621,7 @@ def audit_text(text: str, max_workers: int = 6) -> dict[str, Any]:
     chimera_count = sum(1 for r in results if r["verdict"] == "CHIMERA_MISMATCH")
     fabricated_count = sum(1 for r in results if r["verdict"] == "FABRICATED_OR_UNRESOLVED")
     retracted_count = sum(1 for r in results if r["verdict"] == "RETRACTED")
+    unavailable_count = sum(1 for r in results if r["verdict"] == "REGISTRY_UNAVAILABLE")
     total = len(results)
     score = round((verified_count / total) * 100.0, 1) if total else 100.0
 
@@ -541,12 +631,13 @@ def audit_text(text: str, max_workers: int = 6) -> dict[str, Any]:
         "chimera_count": chimera_count,
         "fabricated_count": fabricated_count,
         "retracted_count": retracted_count,
+        "unavailable_count": unavailable_count,
         "integrity_score": score,
         "results": results,
         "summary": (
             f"Audited {total} citation(s): {verified_count} VERIFIED, "
             f"{chimera_count} CHIMERA_MISMATCH, {fabricated_count} FABRICATED/BROKEN, "
-            f"{retracted_count} RETRACTED (Integrity Score: {score}%)."
+            f"{retracted_count} RETRACTED, {unavailable_count} REGISTRY_UNAVAILABLE (Integrity Score: {score}%)."
         ),
     }
 

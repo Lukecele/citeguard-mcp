@@ -3,7 +3,7 @@
   "description": "<p>Zero-dependency Python Model Context Protocol (MCP) server and command-line interface (CLI) that verifies scientific citations (DOIs, PubMed PMIDs, and arXiv IDs) in real time across Crossref, DataCite (CERN Zenodo), PubMed (NCBI E-utilities), OpenAlex, and arXiv. Detects fabricated identifiers, LLM chimera metadata mismatches (valid DOIs paired with fabricated titles, authors, or years), and formally retracted papers, and generates canonical BibTeX bibliographies.</p>",
   "upload_type": "software",
   "license": "MIT",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "publication_date": "2026-11-26",
   "creators": [
     {

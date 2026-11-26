@@ -8,12 +8,12 @@
     "source": "github"
   },
   "websiteUrl": "https://github.com/Lukecele/citeguard-mcp",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "packages": [
     {
       "registryType": "pypi",
       "identifier": "citeguard-mcp",
-      "version": "0.1.3",
+      "version": "0.1.4",
       "runtimeHint": "uvx",
       "transport": {
         "type": "stdio"
@@ -21,7 +21,7 @@
     },
     {
       "registryType": "oci",
-      "identifier": "ghcr.io/lukecele/citeguard-mcp:0.1.3",
+      "identifier": "ghcr.io/lukecele/citeguard-mcp:0.1.4",
       "transport": {
         "type": "stdio"
       }

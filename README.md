@@ -63,7 +63,7 @@ claude mcp add citeguard -- uvx citeguard-mcp serve
   "mcpServers": {
     "citeguard": {
       "command": "docker",
-      "args": ["run", "-i", "--rm", "ghcr.io/lukecele/citeguard-mcp:0.1.3"]
+      "args": ["run", "-i", "--rm", "ghcr.io/lukecele/citeguard-mcp:0.1.4"]
     }
   }
 }
