@@ -7,6 +7,7 @@
 
 [![CI](https://github.com/Lukecele/citeguard-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/Lukecele/citeguard-mcp/actions/workflows/ci.yml)
 [![PyPI](https://img.shields.io/pypi/v/citeguard-mcp?logo=pypi&logoColor=white)](https://pypi.org/project/citeguard-mcp/)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.24553130.svg)](https://doi.org/10.5281/zenodo.24553130)
 [![Glama MCP Server](https://glama.ai/mcp/servers/Lukecele/citeguard-mcp/badges/score.svg)](https://glama.ai/mcp/servers/Lukecele/citeguard-mcp)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![MCP Compatible](https://img.shields.io/badge/MCP-JSON--RPC_2.0-00a67e)](https://modelcontextprotocol.io/)
@@ -130,9 +131,10 @@ pytest -v
 
 ---
 
-## 👤 Author & License
+## 👤 Author, Citation & License
 
-Created by **[Luca Celebrano](https://lucacelebrano.me)** ([@Lukecele](https://github.com/Lukecele) · ORCID [`0009-0007-0931-3555`](https://orcid.org/0009-0007-0931-3555)).  
+Created by **[Luca Celebrano](https://lucacelebrano.me)** ([@Lukecele](https://github.com/Lukecele) · Independent Researcher · ORCID [`0009-0007-0931-3555`](https://orcid.org/0009-0007-0931-3555)).  
+Archived at CERN Zenodo under DOI **[`10.5281/zenodo.24553130`](https://doi.org/10.5281/zenodo.24553130)** (concept DOI: [`10.5281/zenodo.24553129`](https://doi.org/10.5281/zenodo.24553129)).  
 Released under the [MIT License](./LICENSE).
 
 <!-- mcp-name: io.github.Lukecele/citeguard-mcp -->
