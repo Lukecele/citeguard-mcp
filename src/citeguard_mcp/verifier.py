@@ -25,6 +25,63 @@ PMID_REGEX = re.compile(r"\bPMID:\s*(\d{4,9})\b", re.IGNORECASE)
 ARXIV_REGEX = re.compile(r"\barXiv:\s*(\d{4}\.\d{4,5}(?:v\d+)?)\b", re.IGNORECASE)
 BIBTEX_ENTRY_REGEX = re.compile(r"@(\w+)\s*\{\s*([^,]+),([\s\S]*?)\n\}", re.MULTILINE)
 
+COMMON_GENES_TARGETS = [
+    "EGFR", "KRAS", "TP53", "BRAF", "ALK", "ROS1", "MET", "PIK3CA",
+    "BRCA1", "BRCA2", "HER2", "ERBB2", "RET", "NTRK", "ctDNA", "PD-L1",
+    "VEGF", "CDK4", "CDK6", "MYC", "PTEN", "RB1", "STK11", "KEAP1",
+]
+
+
+def extract_clinical_metrics(text: str) -> dict[str, list[str]]:
+    """Extract clinical and statistical metrics (N, HR, OR, 95% CI, p-values, biomarkers) from abstract text."""
+    empty = {
+        "sample_sizes": [],
+        "hazard_ratios": [],
+        "odds_ratios": [],
+        "confidence_intervals": [],
+        "p_values": [],
+        "targets": [],
+    }
+    if not text:
+        return empty
+    cleaned = " ".join(re.sub(r"<[^>]+>", " ", html.unescape(text)).split())
+
+    sample_sizes: set[str] = set()
+    for m in re.findall(r"\b[Nn]\s*=\s*([0-9,]+)", cleaned):
+        val = m.replace(",", "").strip()
+        if val.isdigit() and int(val) > 1:
+            sample_sizes.add(f"N={val}")
+    for m in re.findall(r"\b([0-9,]+)\s+(?:patients|cases|samples|individuals|subjects)\b", cleaned, re.IGNORECASE):
+        val = m.replace(",", "").strip()
+        if val.isdigit() and int(val) > 5:
+            sample_sizes.add(f"N={val}")
+
+    hazard_ratios = {f"HR={m}" for m in re.findall(r"\bHR\s*[:=]\s*([0-9\.]+)", cleaned, re.IGNORECASE)}
+    odds_ratios = {f"OR={m}" for m in re.findall(r"\bOR\s*[:=]\s*([0-9\.]+)", cleaned, re.IGNORECASE)}
+    confidence_intervals = {
+        f"95%CI [{m.strip()}]"
+        for m in re.findall(r"95%\s*CI[:\s,]*([0-9\.]+\s*(?:-|to|–)\s*[0-9\.]+)", cleaned, re.IGNORECASE)
+    }
+    p_values: set[str] = set()
+    for op, val in re.findall(r"\b[pP]\s*([<>=]|<=|>=)\s*([0-9\.\-eE]+)", cleaned):
+        try:
+            fval = float(val)
+            if 0.0 <= fval <= 1.0 or "e" in val.lower():
+                p_values.add(f"p{op}{val}")
+        except ValueError:
+            continue
+    targets = {
+        g for g in COMMON_GENES_TARGETS if re.search(r"\b" + re.escape(g) + r"\b", cleaned, re.IGNORECASE)
+    }
+    return {
+        "sample_sizes": sorted(sample_sizes)[:3],
+        "hazard_ratios": sorted(hazard_ratios)[:3],
+        "odds_ratios": sorted(odds_ratios)[:3],
+        "confidence_intervals": sorted(confidence_intervals)[:3],
+        "p_values": sorted(p_values)[:4],
+        "targets": sorted(targets)[:5],
+    }
+
 
 def _reset_net_errors() -> None:
     _TLS.net_errors = []
@@ -679,6 +736,44 @@ def search_verified_literature(query: str, limit: int = 5, source: str = "all") 
                 "open_access_url": (w.get("open_access") or {}).get("oa_url"),
                 "citation_count": w.get("cited_by_count", 0),
                 "is_retracted": bool(w.get("is_retracted")),
+            }
+            rec["bibtex"] = _format_bibtex(rec)
+            rec["apa"] = _format_apa(rec)
+            results.append(rec)
+
+    if source in ("all", "europepmc") and len(results) < limit:
+        q = urllib.parse.quote(query)
+        epmc = _http_get_json(
+            f"https://www.ebi.ac.uk/europepmc/webservices/rest/search?query={q}&format=json&pageSize={limit}&resultType=core"
+        )
+        for r in (epmc or {}).get("resultList", {}).get("result", [])[:limit]:
+            if len(results) >= limit:
+                break
+            raw_doi = r.get("doi") or ""
+            doi = _clean_doi(raw_doi) if raw_doi else None
+            if doi and doi.lower() in seen_dois:
+                continue
+            if doi:
+                seen_dois.add(doi.lower())
+            title = html.unescape(re.sub(r"<[^>]+>", "", r.get("title", "Untitled"))).strip()
+            author_str = r.get("authorString", "")
+            authors = [a.strip() for a in author_str.split(",") if a.strip()] or ["Unknown"]
+            year_val = r.get("pubYear")
+            year = int(year_val) if (year_val and str(year_val).isdigit()) else None
+            pmid = r.get("pmid")
+            abstract = r.get("abstractText") or ""
+            rec = {
+                "registry": "Europe PMC",
+                "title": title,
+                "authors": authors[:8],
+                "year": year,
+                "journal": r.get("journalTitle") or "Europe PMC",
+                "doi": doi,
+                "pmid": pmid,
+                "url": f"https://doi.org/{doi}" if doi else (f"https://pubmed.ncbi.nlm.nih.gov/{pmid}/" if pmid else None),
+                "citation_count": r.get("citedByCount", 0),
+                "is_retracted": "retracted" in (r.get("pubTypeList", {}).get("pubType", []) or []),
+                "clinical_metrics": extract_clinical_metrics(f"{title} {abstract}"),
             }
             rec["bibtex"] = _format_bibtex(rec)
             rec["apa"] = _format_apa(rec)

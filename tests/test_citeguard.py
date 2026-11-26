@@ -9,6 +9,7 @@ from citeguard_mcp.verifier import (
     _extract_citations_from_text,
     _title_similarity,
     audit_text,
+    extract_clinical_metrics,
     verify_citation,
 )
 
@@ -138,6 +139,19 @@ def test_extract_citations_from_text():
     assert "10.1038/s41586-021-03819-2" in ids
     assert "PMID:37257442" in ids
     assert "arXiv:1706.03762" in ids
+
+
+def test_extract_clinical_metrics():
+    abstract = (
+        "In N = 604 patients with EGFR-mutated and ctDNA-positive lung adenocarcinoma, "
+        "lepidic architecture conferred survival protection (HR = 0.25, 95% CI: 0.09-0.70, p = 0.0084)."
+    )
+    m = extract_clinical_metrics(abstract)
+    assert "N=604" in m["sample_sizes"]
+    assert "HR=0.25" in m["hazard_ratios"]
+    assert any("0.09-0.70" in ci for ci in m["confidence_intervals"])
+    assert "p=0.0084" in m["p_values"]
+    assert "EGFR" in m["targets"] and "ctDNA" in m["targets"]
 
 
 def test_mcp_jsonrpc_lifecycle():

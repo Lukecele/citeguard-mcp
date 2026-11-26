@@ -142,7 +142,7 @@ def main(argv: list[str] | None = None) -> int:
     p_src = sub.add_parser("search", help="Search OpenAlex, PubMed, Crossref & arXiv for verified literature.")
     p_src.add_argument("query", help="Search query.")
     p_src.add_argument("--limit", type=int, default=5, help="Max results (default: 5).")
-    p_src.add_argument("--source", choices=["all", "openalex", "pubmed", "arxiv"], default="all")
+    p_src.add_argument("--source", choices=["all", "openalex", "pubmed", "europepmc", "arxiv"], default="all")
     p_src.add_argument("--json", action="store_true", help="Output raw JSON.")
 
     # 5. bibtex

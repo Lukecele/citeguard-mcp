@@ -138,10 +138,11 @@ MCP_TOOLS: list[dict[str, Any]] = [
                 },
                 "source": {
                     "type": "string",
-                    "enum": ["all", "openalex", "crossref", "pubmed", "arxiv"],
+                    "enum": ["all", "openalex", "crossref", "pubmed", "europepmc", "arxiv"],
                     "description": (
-                        "Registry source to query: 'all' (queries OpenAlex/Crossref first, then supplements with PubMed "
-                        "and arXiv), 'openalex', 'crossref', 'pubmed', or 'arxiv'. Default: 'all'."
+                        "Registry source to query: 'all' (queries OpenAlex/Crossref first, then supplements with Europe PMC, "
+                        "PubMed, and arXiv), 'openalex', 'crossref', 'pubmed', 'europepmc' (EBI Europe PMC with automated "
+                        "clinical metric extraction: N, HR, OR, 95% CI, p-values, targets), or 'arxiv'. Default: 'all'."
                     ),
                     "default": "all",
                 },
